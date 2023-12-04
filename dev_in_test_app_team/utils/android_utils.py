@@ -7,7 +7,7 @@ def android_get_desired_capabilities():
         'platformName': 'Android',
         'platformVersion': '12',
         'resetKeyboard': True,
-        'systemPort': 5037,
+        'systemPort': 8301,
         'takesScreenshot': True,
         'udid': '93TAY0FQSU',
         'appPackage': 'com.ajaxsystems',
