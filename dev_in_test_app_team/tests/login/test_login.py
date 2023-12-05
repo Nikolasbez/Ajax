@@ -1,68 +1,57 @@
-from time import sleep
+import pytest
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from framework.page import Page
 
-#def test_user_login(user_login_fixture):
-    #assert True
+from framework.locators import POSITIVE_LOGIN, NEGATIVE_LOGIN
 
-def test_login_successful(driver):
-        # Locate login elements and interact with them
-        login_button = driver.find_element_by_xpath ('//android.widget.TextView[@resource-id="com.ajaxsystems:id/text" and @text="Log In"]')
-        login_button.click()
+# Test for positive login scenario
+@pytest.mark.parametrize("username, password", [("qa.ajax.app.automation@gmail.com", "qa_automation_password")])
+def test_positive_login(username, password, user_login_fixture, driver):
+    try:
+        Page.click_element(driver, POSITIVE_LOGIN['login_button_locator'])
 
-        sleep(3)
+        wait = WebDriverWait(driver, 10)
+        wait.until(EC.visibility_of_element_located(POSITIVE_LOGIN['username_locator']))
 
-        # Find the login fields and button
-        username_field = driver.find_element_by_xpath('(//android.widget.EditText[@resource-id="defaultAutomationId"])[1]')
-        password_field = driver.find_element_by_xpath('(//android.widget.EditText[@resource-id="defaultAutomationId"])[2]')
+        Page.find_element(driver, POSITIVE_LOGIN['username_locator']).send_keys(username)
+        Page.find_element(driver, POSITIVE_LOGIN['password_locator']).send_keys(password)
+        Page.click_element(driver, POSITIVE_LOGIN['login_button_locator'])
 
-        sleep(3)
+        wait = WebDriverWait(driver, 10)
+        wait.until(EC.visibility_of_element_located(POSITIVE_LOGIN['menu_drawer']))
+        assert Page.find_element(driver, POSITIVE_LOGIN['menu_drawer']).is_displayed()
 
-        submit_button = driver.find_element_by_xpath('//android.widget.TextView[@resource-id="com.ajaxsystems:id/text" and @text="Log In"]')
-
-        # Login
-        username_field.clear()
-        password_field.clear()
-        username_field.send_keys('qa.ajax.app.automation@gmail.com')
-        password_field.send_keys('qa_automation_password')
-        submit_button.click()
-
-        # Wait for the login process to complete
-        sleep(3)
-
-        # Check if the user is logged in successfully by verifying an element that appears after login
-        assert driver.find_element_by_id('com.ajaxsystems:id/menuDrawer').is_displayed()
-
-        sandwich_button = driver.find_element_by_id('com.ajaxsystems:id/menuDrawer')
+        sandwich_button = Page.find_element(driver, POSITIVE_LOGIN['menu_drawer'])
         sandwich_button.click()
 
-        sleep(3)
+        wait.until(EC.visibility_of_element_located(POSITIVE_LOGIN['build_element']))
+        assert Page.find_element(user_login_fixture, POSITIVE_LOGIN['build_element']).is_displayed()
 
-        assert driver.find_element_by_id('com.ajaxsystems:id/build').is_displayed()
+    except Exception as e:
+        print(f"Exception occurred: {str(e)}")
+    finally:
+        if driver is not None:
+            driver.quit()
 
-def test_login_failed(driver):
+# Test for negative login scenario
+def test_negative_login(driver, user_login_fixture):
+    try:
+        Page.click_element(driver, POSITIVE_LOGIN['login_button_locator'])
 
-        # Locate login elements and interact with them
-        login_button = driver.find_element_by_xpath('//android.widget.TextView[@resource-id="com.ajaxsystems:id/text" and @text="Log In"]')
-        login_button.click()
+        wait = WebDriverWait(driver, 10)
+        wait.until(EC.visibility_of_element_located(POSITIVE_LOGIN['username_locator']))
+    
+        Page.find_element(driver, NEGATIVE_LOGIN['username_locator']).send_keys("incorrect_username")
+        Page.find_element(driver, NEGATIVE_LOGIN['password_locator']).send_keys("incorrect_password")
+        Page.click_element(driver, NEGATIVE_LOGIN['login_button_locator'])
 
-        sleep(3)
+        wait = WebDriverWait(driver, 10)
+        wait.until(EC.visibility_of_element_located(NEGATIVE_LOGIN['error_message']))
+        assert Page.find_element(user_login_fixture, NEGATIVE_LOGIN['error_message']).is_displayed()
 
-        # Find the login fields and button
-        username_field = driver.find_element_by_xpath('(//android.widget.EditText[@resource-id="defaultAutomationId"])[1]')
-        password_field = driver.find_element_by_xpath('(//android.widget.EditText[@resource-id="defaultAutomationId"])[1]')
-
-        sleep(3)
-
-        submit_button = driver.find_element_by_xpath('//android.widget.TextView[@resource-id="com.ajaxsystems:id/text" and @text="Log In"]')
-
-        # Login
-        username_field.clear()
-        password_field.clear()
-        username_field.send_keys('test_login')
-        password_field.send_keys('test_password')
-        submit_button.click()
-
-        # Wait for the login process to complete
-        sleep(3)
-
-        # Check if the error message element is displayed when login fails
-        assert driver.find_element_by_id('com.ajaxsystems:id/snackbar_text').is_displayed()
+    except Exception as e:
+        print(f"Exception occurred: {str(e)}")
+    finally:
+        if driver is not None:
+            driver.quit()

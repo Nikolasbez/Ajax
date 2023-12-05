@@ -10,10 +10,10 @@ from utils.android_utils import android_get_desired_capabilities
 @pytest.fixture(scope='session')
 def run_appium_server():
     subprocess.Popen(
-        ['appium', '-a', '127.0.0.1', '-p', '4723', '--allow-insecure', 'adb_shell'],
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-        stdin=subprocess.DEVNULL,
+        ['appium', '-a', '0.0.0.0', '-p', '4723', '--allow-insecure', 'adb_shell'],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        stdin=subprocess.PIPE,
         shell=True
     )
     time.sleep(5)
@@ -21,11 +21,5 @@ def run_appium_server():
 
 @pytest.fixture(scope='session')
 def driver(run_appium_server):
-    driver = webdriver.Remote('http://127.0.0.1:4723/wd/hub', android_get_desired_capabilities())
+    driver = webdriver.Remote('http://localhost:4723/wd/hub', android_get_desired_capabilities())
     yield driver
-
-#@pytest.fixture(scope='session')
-#def cleanup(driver)
-#"""Close selenium driver"""
-    #driver.close()
-    #driver.quit()
